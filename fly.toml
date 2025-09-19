@@ -1,5 +1,4 @@
 app = "signal-forwarder"
-primary_region = "waw"
 
 [build]
 
@@ -9,9 +8,17 @@ primary_region = "waw"
   auto_rollback = true
 
 [processes]
-  worker = "python main.py"
+  app = "python main.py"
 
-[checks.commands]
-  command = "echo running"
-  interval = "30s"
-  timeout = "10s"
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+
+  [[services.ports]]
+    port = 8080
+
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "10s"
+    restart_limit = 0
