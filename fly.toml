@@ -1,0 +1,11 @@
+app = "signal-forwarder"
+
+[build]
+
+[env]
+
+[experimental]
+  auto_rollback = true
+
+[processes]
+  worker = "python main.py"
