@@ -1,4 +1,5 @@
 app = "signal-forwarder"
+primary_region = "waw"
 
 [build]
 
@@ -10,10 +11,7 @@ app = "signal-forwarder"
 [processes]
   worker = "python main.py"
 
-[checks]
-  # vietoj HTTP smoke-check, vykdome paprastą komandą, kad Fly neprašytų porto
-  [[checks.commands]]
+[checks.commands]
   command = "echo running"
   interval = "30s"
   timeout = "10s"
-  grace_period = "30s"
