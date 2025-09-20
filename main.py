@@ -1,33 +1,26 @@
 import os
-import re
 from telethon import TelegramClient, events
 
-# Aplinkos kintamieji (Fly secrets)
-API_ID = int(os.getenv("API_ID"))
-API_HASH = os.getenv("API_HASH")
-SOURCE_CHAT_ID = int(os.getenv("SOURCE_CHAT_ID"))
-TARGET_CHAT_ID = int(os.getenv("TARGET_CHAT_ID"))
+# API ir bot token gaunami iš Fly.io secrets
+api_id = int(os.getenv("TG_API_ID"))
+api_hash = os.getenv("TG_API_HASH")
+bot_token = os.getenv("TG_BOT_TOKEN")
 
-# Sesija laikoma atmintyje, nereikia prisijungimo iš naujo
-client = TelegramClient("forwarder", API_ID, API_HASH)
+# Sukuriam klientą su bot token
+client = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
 
-# Regex paimti Leverage reikšmei
-LEVERAGE_REGEX = re.compile(r"\b(\d+)\s*[xX]|\bLeverage[: ]+(\d+)", re.IGNORECASE)
+# 🔴 ČIA SUDEDU TAVO KANALŲ ID 🔴
+SOURCE_CHAT = -1001234567890      # signalų grupės chat_id
+TARGET_CHAT = -1002539410010      # tavo kanalo "Prekybos signalai" chat_id
 
-def extract_leverage(text: str) -> int:
-    match = LEVERAGE_REGEX.search(text)
-    if match:
-        return int(match.group(1) or match.group(2))
-    return 1
+print("🚀 Forwarderis paleistas – laukiu žinučių...")
 
-@client.on(events.NewMessage(chats=SOURCE_CHAT_ID))
+@client.on(events.NewMessage(chats=SOURCE_CHAT))
 async def handler(event):
-    msg_text = event.message.message or ""
-    lev = extract_leverage(msg_text)
-    if lev >= 3:
-        await client.send_message(TARGET_CHAT_ID, event.message)
+    try:
+        await client.send_message(TARGET_CHAT, event.message)
+        print("✅ Persiųsta žinutė")
+    except Exception as e:
+        print("❌ Klaida:", e)
 
-print("🚀 Forwarderis paleistas... Laukiu žinučių.")
-
-client.start()
 client.run_until_disconnected()
