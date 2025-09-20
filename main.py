@@ -1,36 +1,29 @@
 import os
-import re
-from telethon import TelegramClient, events
+import logging
+from telegram import Update
+from telegram.ext import Application, MessageHandler, filters, ContextTypes
 
-# API ID ir API HASH pasiimti iš my.telegram.org
-API_ID = int(os.getenv("API_ID"))
-API_HASH = os.getenv("API_HASH")
+logging.basicConfig(level=logging.INFO)
 
-# Telegram sesijos failo vardas
-SESSION = "forwarder"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# Šaltinio grupės username
-SOURCE_CHAT = "@Signal_Messenger8"
+# Tavo ID
+SOURCE_CHAT_ID = 274148621        # Signal Messenger narys
+TARGET_CHAT_ID = -1002539410010   # Kanalas „Prekybos signalai“
 
-# Tik šio autoriaus (nario) ID klausom
-SOURCE_USER = 274148621
+async def forward_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.id == SOURCE_CHAT_ID:
+        await context.bot.forward_message(
+            chat_id=TARGET_CHAT_ID,
+            from_chat_id=update.effective_chat.id,
+            message_id=update.message.message_id
+        )
+        logging.info("Persiųsta į kanalą")
 
-# Tikslinis kanalas, į kurį siųsim žinutes
-TARGET_CHAT = -1002539410010
+def main():
+    app = Application.builder().token(BOT_TOKEN).build()
+    app.add_handler(MessageHandler(filters.ALL, forward_message))
+    app.run_polling()
 
-client = TelegramClient(SESSION, API_ID, API_HASH)
-
-@client.on(events.NewMessage(chats=SOURCE_CHAT, from_users=SOURCE_USER))
-async def handler(event):
-    text = event.raw_text
-
-    # Ieškom leverage reikšmės
-    match = re.search(r"Leverage\s*:?[\s]*([0-9]+)", text, re.IGNORECASE)
-    if match:
-        lev = int(match.group(1))
-        if lev >= 3:  # tik jeigu >=3
-            await client.send_message(TARGET_CHAT, text)
-
-print("🚀 Forwarderis paleistas...")
-client.start()
-client.run_until_disconnected()
+if __name__ == "__main__":
+    main()
