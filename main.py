@@ -2,30 +2,31 @@ import os
 import re
 from telethon import TelegramClient, events
 
-# Secrets
-api_id = int(os.getenv("API_ID"))
-api_hash = os.getenv("API_HASH")
-source_chat = int(os.getenv("SOURCE_CHAT_ID"))   # signalų grupė
-target_chat = int(os.getenv("TARGET_CHAT_ID"))   # tavo kanalas
+# Aplinkos kintamieji (Fly secrets)
+API_ID = int(os.getenv("API_ID"))
+API_HASH = os.getenv("API_HASH")
+SOURCE_CHAT_ID = int(os.getenv("SOURCE_CHAT_ID"))
+TARGET_CHAT_ID = int(os.getenv("TARGET_CHAT_ID"))
 
-client = TelegramClient("forwarder", api_id, api_hash)
+# Sesijos failas
+client = TelegramClient("forwarder", API_ID, API_HASH)
 
-@client.on(events.NewMessage(chats=source_chat))
-async def handler(event):
-    text = event.message.message
+# Leverage regex
+LEVERAGE_REGEX = re.compile(r"\b(\d+)\s*[xX]|\bLeverage[: ]+(\d+)", re.IGNORECASE)
 
-    # Ieškom "Leverage" + skaičius
-    match = re.search(r"Leverage\s*[:\-]?\s*(\d+)", text, re.IGNORECASE)
+def extract_leverage(text: str) -> int:
+    match = LEVERAGE_REGEX.search(text)
     if match:
-        leverage = int(match.group(1))
-        if leverage >= 3:
-            await client.send_message(target_chat, text)
-            print(f"✅ Persiųsta (Leverage {leverage})")
-        else:
-            print(f"❌ Praleista (Leverage {leverage})")
-    else:
-        print("⚠️ Nerasta 'Leverage' žinutėje, praleista.")
+        return int(match.group(1) or match.group(2))
+    return 1
 
-print("🚀 Forwarderis paleistas...")
+@client.on(events.NewMessage(chats=SOURCE_CHAT_ID))
+async def handler(event):
+    msg_text = event.message.message or ""
+    lev = extract_leverage(msg_text)
+    if lev >= 3:
+        await client.send_message(TARGET_CHAT_ID, event.message)
+
+print("🚀 Forwarderis paleistas... Laukiu žinučių.")
 client.start()
 client.run_until_disconnected()
