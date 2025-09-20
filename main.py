@@ -1,26 +1,36 @@
 import os
+import re
 from telethon import TelegramClient, events
 
-# API ir bot token gaunami iš Fly.io secrets
-api_id = int(os.getenv("TG_API_ID"))
-api_hash = os.getenv("TG_API_HASH")
-bot_token = os.getenv("TG_BOT_TOKEN")
+# API ID ir API HASH pasiimti iš my.telegram.org
+API_ID = int(os.getenv("API_ID"))
+API_HASH = os.getenv("API_HASH")
 
-# Sukuriam klientą su bot token
-client = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
+# Telegram sesijos failo vardas
+SESSION = "forwarder"
 
-# 🔴 ČIA SUDEDU TAVO KANALŲ ID 🔴
-SOURCE_CHAT = -1001234567890      # signalų grupės chat_id
-TARGET_CHAT = -1002539410010      # tavo kanalo "Prekybos signalai" chat_id
+# Šaltinio grupės username
+SOURCE_CHAT = "@Signal_Messenger8"
 
-print("🚀 Forwarderis paleistas – laukiu žinučių...")
+# Tik šio autoriaus (nario) ID klausom
+SOURCE_USER = 274148621
 
-@client.on(events.NewMessage(chats=SOURCE_CHAT))
+# Tikslinis kanalas, į kurį siųsim žinutes
+TARGET_CHAT = -1002539410010
+
+client = TelegramClient(SESSION, API_ID, API_HASH)
+
+@client.on(events.NewMessage(chats=SOURCE_CHAT, from_users=SOURCE_USER))
 async def handler(event):
-    try:
-        await client.send_message(TARGET_CHAT, event.message)
-        print("✅ Persiųsta žinutė")
-    except Exception as e:
-        print("❌ Klaida:", e)
+    text = event.raw_text
 
+    # Ieškom leverage reikšmės
+    match = re.search(r"Leverage\s*:?[\s]*([0-9]+)", text, re.IGNORECASE)
+    if match:
+        lev = int(match.group(1))
+        if lev >= 3:  # tik jeigu >=3
+            await client.send_message(TARGET_CHAT, text)
+
+print("🚀 Forwarderis paleistas...")
+client.start()
 client.run_until_disconnected()
