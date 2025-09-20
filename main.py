@@ -8,10 +8,10 @@ API_HASH = os.getenv("API_HASH")
 SOURCE_CHAT_ID = int(os.getenv("SOURCE_CHAT_ID"))
 TARGET_CHAT_ID = int(os.getenv("TARGET_CHAT_ID"))
 
-# Sesijos failas
+# Sesija laikoma atmintyje, nereikia prisijungimo iš naujo
 client = TelegramClient("forwarder", API_ID, API_HASH)
 
-# Leverage regex
+# Regex paimti Leverage reikšmei
 LEVERAGE_REGEX = re.compile(r"\b(\d+)\s*[xX]|\bLeverage[: ]+(\d+)", re.IGNORECASE)
 
 def extract_leverage(text: str) -> int:
@@ -28,5 +28,6 @@ async def handler(event):
         await client.send_message(TARGET_CHAT_ID, event.message)
 
 print("🚀 Forwarderis paleistas... Laukiu žinučių.")
+
 client.start()
 client.run_until_disconnected()
