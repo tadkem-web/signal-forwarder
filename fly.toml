@@ -1,5 +1,4 @@
-# fly.toml
-app = "signal-forwarder-111"  # 🚨 Pakeiskite jei reikia!
+app = "signal-forwarder-111"
 
 [build]
   builder = "heroku/builder:22"
@@ -10,19 +9,8 @@ app = "signal-forwarder-111"  # 🚨 Pakeiskite jei reikia!
 [[services]]
   internal_port = 8080
   protocol = "tcp"
+  force_http_dispatcher = false  # 🚨 SVARBU: Išjungiame porto tikrinimą
 
   [services.concurrency]
     hard_limit = 25
     soft_limit = 20
-
-  [[services.ports]]
-    handlers = ["http"]
-    port = 80
-
-  [[services.ports]]
-    handlers = ["tls", "http"]
-    port = 443
-
-  [[services.tcp_checks]]
-    interval = 10000
-    timeout = 2000
