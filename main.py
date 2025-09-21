@@ -1,29 +1,39 @@
+# main.py
 import os
-import logging
-from telegram import Update
-from telegram.ext import Application, MessageHandler, filters, ContextTypes
+import asyncio
+from telethon import TelegramClient, events
+from telethon.sessions import StringSession
 
-logging.basicConfig(level=logging.INFO)
+API_ID = int(os.environ.get("API_ID", "0"))
+API_HASH = os.environ.get("API_HASH", "")
+STRING_SESSION = os.environ.get("STRING_SESSION", "")
+SOURCE_CHAT = os.environ.get("SOURCE_CHAT", "")  # can be numeric id or '@username'
+TARGET_CHAT = os.environ.get("TARGET_CHAT", "")  # channel id or '@channelusername'
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+if not (API_ID and API_HASH and STRING_SESSION and SOURCE_CHAT and TARGET_CHAT):
+    print("Missing env vars. Please set API_ID, API_HASH, STRING_SESSION, SOURCE_CHAT, TARGET_CHAT.")
+    raise SystemExit(1)
 
-# Tavo ID
-SOURCE_CHAT_ID = 274148621        # Signal Messenger narys
-TARGET_CHAT_ID = -1002539410010   # Kanalas „Prekybos signalai“
+client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH,)
 
-async def forward_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.id == SOURCE_CHAT_ID:
-        await context.bot.forward_message(
-            chat_id=TARGET_CHAT_ID,
-            from_chat_id=update.effective_chat.id,
-            message_id=update.message.message_id
-        )
-        logging.info("Persiųsta į kanalą")
+@client.on(events.NewMessage(chats=SOURCE_CHAT))
+async def handler(event):
+    try:
+        msg = event.message
+        # forward preserving original sender + media if any:
+        if msg.media:
+            await client.send_file(TARGET_CHAT, msg.media, caption=msg.text or "")
+        else:
+            await client.send_message(TARGET_CHAT, msg.text or "")
+        print("Forwarded message id", msg.id)
+    except Exception as e:
+        print("Error forwarding:", repr(e))
 
-def main():
-    app = Application.builder().token(BOT_TOKEN).build()
-    app.add_handler(MessageHandler(filters.ALL, forward_message))
-    app.run_polling()
+async def main_loop():
+    print("Starting client...")
+    await client.start()
+    print("Client started, listening for messages from", SOURCE_CHAT, "->", TARGET_CHAT)
+    await client.run_until_disconnected()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main_loop())
