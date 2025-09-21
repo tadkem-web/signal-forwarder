@@ -1,7 +1,0 @@
-app = "signal-forwarder"
-
-[build]
-  dockerfile = "Dockerfile"
-
-[env]
-  PYTHONUNBUFFERED = "1"
