@@ -1,11 +1,11 @@
 # fly.toml
-app = "signal-forwarder-111"  # 🚨 PAKEISKITE ŠĮ PAVADINIMĄ! 
+app = "signal-forwarder-111"  # 🚨 Pakeiskite jei reikia!
 
 [build]
-  builder = "heroku/buildpacks:20"
+  builder = "heroku/builder:22"
 
 [env]
-  # Čia nustatysime kintamuosius vėliau, per fly.io svetainę
+  # Čia nustatysime kintamuosius per fly.io svetainę
 
 [[services]]
   internal_port = 8080
