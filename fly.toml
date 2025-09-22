@@ -1,8 +1,5 @@
 app = "signal-forwarder-111"
 
-[build]
-  builder = "heroku/builder:22"
-
 [[services]]
   internal_port = 8080
   protocol = "tcp"
