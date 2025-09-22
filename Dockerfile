@@ -1,7 +1,3 @@
-FROM python:3.11-alpine
+FROM alpine:latest
 
-WORKDIR /app
-
-COPY app.py .
-
-CMD ["python", "app.py"]
+CMD echo "🟢 Labai paprastas testas veikia!" && sleep 60
