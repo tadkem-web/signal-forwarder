@@ -1,20 +1,21 @@
 print("🟢 Programa paleista sėkmingai!")
-print("Tikrinama telethon biblioteka...")
-try:
-    import telethon
-    print("✅ telethon biblioteka veikia")
-except ImportError as e:
-    print(f"❌ Klaida: {e}")
+print("Tikrinama, ar visi kintamieji yra...")
 
-print("Tikrinama aplinkos kintamuosius...")
 import os
-try:
-    keys = ['API_ID', 'API_HASH', 'SESSION_STRING', 'BOT_TOKEN', 'TARGET_CHANNEL_ID']
-    for key in keys:
-        value = os.environ.get(key)
-        if value:
-            print(f"✅ {key}: {len(value)} simbolių")
-        else:
-            print(f"❌ {key}: NERASTAS")
-except Exception as e:
-    print(f"❌ Klaida: {e}")
+
+required_vars = ['API_ID', 'API_HASH', 'BOT_TOKEN', 'TARGET_CHANNEL_ID', 'SESSION_STRING']
+all_vars_exist = True
+
+for var in required_vars:
+    value = os.environ.get(var)
+    if value:
+        print(f"✅ {var}: {value[:3]}...")
+    else:
+        print(f"❌ {var}: NERASTAS")
+        all_vars_exist = False
+
+if all_vars_exist:
+    print("🎉 Visi kintamieji egzistuoja! Programa veiktų.")
+else:
+    print("💥 Trūksta kintamųjų! Programa užsidarys.")
+    exit(1)
