@@ -1,1 +1,0 @@
-print("🟢 Paprastas testas pradėtas")
