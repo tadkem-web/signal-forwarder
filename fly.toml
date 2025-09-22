@@ -3,9 +3,6 @@ app = "signal-forwarder-111"
 [build]
   builder = "heroku/builder:22"
 
-[vm]
-  size = "shared-cpu-1x"  # 512MB RAM (2x daugiau)
-
 [[services]]
   internal_port = 8080
   protocol = "tcp"
