@@ -1,1 +1,0 @@
-# Tuščias failas - nereikia jokių bibliotekų testavimui
